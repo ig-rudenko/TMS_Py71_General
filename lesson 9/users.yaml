@@ -1,0 +1,20 @@
+- username: user1
+  age: 33
+  email: user1@mail.com
+  name: IVAN
+  is_admin: yes
+  desc: Инженер, помощник начальника
+  address: &adr
+    city: Moscow
+    street: Lenina 2
+    house_number: 3
+
+- username: user2
+  age: 20
+  email: user2@mail.com
+  name: MARK
+  is_admin: false
+  desc:
+  address:
+    << : *adr
+    house_number: 4

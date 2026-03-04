@@ -1,0 +1,3 @@
+username;age;email;name;desc;is_admin
+user1;33;user1@mail.com;IVAN;Инженер, помощник начальника;1
+user2;20;user2@mail.com;MARK;;0
