@@ -11,7 +11,8 @@ __pycache__/
 # Custom
 *.ini
 *.png
-
+lesson 13/storage
+./lesson 13/storage
 
 # Distribution / packaging
 .Python
