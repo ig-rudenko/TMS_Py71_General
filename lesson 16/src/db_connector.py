@@ -1,0 +1,9 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from . import settings
+
+engine = create_engine(settings.DB_URL, echo=settings.ECHO, pool_size=1)
+
+session_maker = sessionmaker(bind=engine)
+session = session_maker()
