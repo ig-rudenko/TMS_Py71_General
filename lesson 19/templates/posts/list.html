@@ -8,12 +8,11 @@
     <div class="card" style="width: 18rem;">
         <div class="card-body">
             <h5 class="card-title">{{ post.title }}</h5>
-            <h6 class="card-subtitle mb-2 text-body-secondary">{{ post.updated_at }}</h6>
+            <h6 class="card-subtitle mb-2 text-body-secondary">{{ post.updated_at.strftime('%A %d %B %Y') }}</h6>
             <p class="card-text">
-                {{ post.content }}
+                {{ post.content[:80] }}...
             </p>
-            <!--        <a href="#" class="card-link">Card link</a>-->
-            <!--        <a href="#" class="card-link">Another link</a>-->
+            <a href="/posts/{{ post.id }}" class="card-link">View</a>
         </div>
     </div>
 

@@ -5,8 +5,8 @@ from src.models import Post
 class PostService:
 
     @staticmethod
-    def get_posts_list() -> list[Post]:
-        posts = Post.query.all()
+    def get_user_posts_list(user_id: int) -> list[Post]:
+        posts = Post.query.filter_by(user_id=user_id).all()
         return posts
 
     @staticmethod
@@ -15,8 +15,8 @@ class PostService:
         return post
 
     @staticmethod
-    def create_new_post(title: str, content: str) -> Post:
-        post = Post(title=title, content=content)
+    def create_new_post(title: str, content: str, user_id: int) -> Post:
+        post = Post(title=title, content=content, user_id=user_id)
         db.session.add(post)
         db.session.commit()
         return post

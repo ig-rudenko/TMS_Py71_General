@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, g, redirect, abort
 
 from src.services.posts import post_service
 
@@ -7,12 +7,20 @@ blueprint = Blueprint('posts', __name__)
 
 @blueprint.route("/posts")
 def list_posts_view():
-    posts = post_service.get_posts_list()
+    if g.current_user is None:
+        return redirect("/login")
+
+    posts = post_service.get_user_posts_list(g.current_user.id)
     return render_template("posts/list.html", posts=posts)
 
 
 @blueprint.route('/posts/create', methods=["GET", "POST"])
 def create_new_post_view():
+    if g.current_user is None:
+        return redirect("/login")
+
+    template_name = "posts/create.html"
+
     print("Функция create_new_post_view, метод:", request.method)
     if request.method == "POST":
         title = request.form.get("title")
@@ -22,11 +30,28 @@ def create_new_post_view():
         print("content:", content)
 
         if not title or not content:
-            return render_template("posts/create.html", error="Заголовок и содержимое должны быть переданы!")
+            return render_template(template_name, error="Заголовок и содержимое должны быть переданы!")
+        if len(title) > 80:
+            return render_template(template_name, error="Длина заголовки должна быть не более 80 символов.")
 
         # --------------------
-        post_service.create_new_post(title, content)
+        post = post_service.create_new_post(title, content, g.current_user.id)
 
-        return render_template("posts/post_created_successfuly.html")
+        return redirect(f"/posts/{post.id}")
 
-    return render_template("posts/create.html")
+    return render_template(template_name)
+
+
+@blueprint.route('/posts/<int:post_id>', methods=["GET"])
+def get_post_by_id_view(post_id: int):
+    if g.current_user is None:
+        return redirect("/login")
+
+    post = post_service.get_post_by_id(post_id)
+    if post is None:
+        abort(404)
+
+    if g.current_user.id != post.user_id:
+        abort(404)
+
+    return render_template("posts/view.html", post=post)
