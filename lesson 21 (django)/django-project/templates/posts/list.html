@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="d-flex flex-wrap gap-3">
+        {% for note in notes %}
+
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ note.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">{{ note.updated_at | date:'l j M. Y H:i' }}</h6>
+                    <p class="card-text">
+                        {{ note.content | truncatewords:10 }}
+                    </p>
+                    <a href="{% url 'notes-detail' note_id=note.id %}" class="card-link">Посмотреть</a>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+
+{% endblock %}
