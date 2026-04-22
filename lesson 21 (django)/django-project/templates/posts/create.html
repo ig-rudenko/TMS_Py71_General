@@ -3,7 +3,7 @@
 
 {% block content %}
 
-    <form action="{% url 'notes-create' %}" method="post">
+    <form action="{% url 'notes-create' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         {{ form | crispy }}

@@ -13,3 +13,8 @@ class Note(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    image = models.ImageField(upload_to='notes/%Y/%m', blank=True, null=True, verbose_name="Картинка", max_length=256)
+
+    class Meta:
+        ordering = ['-created_at']
