@@ -1,8 +1,14 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-
 USER_MODEL = get_user_model()
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.name
 
 
 class Note(models.Model):
@@ -14,7 +20,10 @@ class Note(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    image = models.ImageField(upload_to='notes/%Y/%m', blank=True, null=True, verbose_name="Картинка", max_length=256)
+    image = models.ImageField(
+        upload_to="notes/%Y/%m", blank=True, null=True, verbose_name="Картинка", max_length=256
+    )
+    tags = models.ManyToManyField("Tag", blank=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]

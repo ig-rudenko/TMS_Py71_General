@@ -117,3 +117,18 @@ FROM "notes_note"
          INNER JOIN "accounting_user" ON ("notes_note"."user_id" = "accounting_user"."id")
 WHERE "notes_note"."user_id" = 1
 ORDER BY "notes_note"."created_at" DESC LIMIT 10
+
+
+-- from django.db.models.query import Q
+-- Note.objects.filter(Q(title__icontains=search) | Q(content__icontains=search))
+SELECT "notes_note"."id",
+       "notes_note"."user_id",
+       "notes_note"."title",
+       "notes_note"."content",
+       "notes_note"."created_at",
+       "notes_note"."updated_at",
+       "notes_note"."image"
+FROM "notes_note"
+WHERE (UPPER("notes_note"."title"::text) LIKE UPPER(%queries.sql%) OR
+       UPPER("notes_note"."content"::text) LIKE UPPER(%queries.sql%))
+ORDER BY "notes_note"."created_at" DESC

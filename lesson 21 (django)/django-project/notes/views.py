@@ -1,5 +1,6 @@
-from django.contrib.auth.decorators import login_required, login_not_required
+from django.contrib.auth.decorators import login_required
 from django.db.models.functions import Substr
+from django.db.models.query import Q
 from django.http import Http404
 from django.shortcuts import render, redirect, resolve_url
 
@@ -17,10 +18,16 @@ def about_view(request):
 
 @login_required
 def notes_list_view(request):
-    notes_qs = Note.objects.filter(user=request.user).select_related("user")  # JOIN с users
+    search = request.GET.get("search", "")
+
+    notes_qs = Note.objects.all()
+    if search:
+        notes_qs = notes_qs.filter(Q(title__icontains=search) | Q(content__icontains=search))
+    notes_qs = notes_qs.select_related("user")  # JOIN с users только для FK.
+    notes_qs = notes_qs.prefetch_related("tags")  # JOIN только для M2M.
     notes_qs = notes_qs.annotate(short_content=Substr("content", 1, 200))
     notes_qs = notes_qs.order_by("-created_at")
-    notes_qs = notes_qs[:10]  # Первые 10 заметок
+    notes_qs = notes_qs[:50]  # Первые 50 заметок
     notes_qs = notes_qs.only("id", "title", "updated_at", "user__username")
 
     return render(request, "posts/list.html", context={"notes_qs": notes_qs})
@@ -39,6 +46,7 @@ def note_create_view(request):
                 image=form.cleaned_data["image"],
                 user=request.user,
             )
+            note.tags.set(form.cleaned_data["tags"])
             return redirect(resolve_url("notes-detail", note_id=note.id))
 
     return render(request, "posts/create.html", context={"form": form})
@@ -51,7 +59,7 @@ def note_detail_view(request, note_id: int):
     except Note.DoesNotExist:
         raise Http404("Note does not exist")
 
-    if request.user != note.user:
-        raise Http404("Note does not exist")
+    # if request.user != note.user:
+    #     raise Http404("Note does not exist")
 
     return render(request, "posts/detail.html", context={"note": note})
