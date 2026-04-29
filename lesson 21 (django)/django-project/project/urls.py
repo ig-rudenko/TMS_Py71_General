@@ -14,8 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
+from django.shortcuts import render
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
@@ -25,11 +27,11 @@ from accounting import views as accounting_views
 from notes import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path("", views.home_view, name="home"),
-    path("about", views.about_view, name="about"),
-    path("notes", views.notes_list_view, name="notes-list"),
-    path("notes/create", views.note_create_view, name="notes-create"),
+    path("admin/", admin.site.urls),
+    path("", lambda r: render(r, "index.html"), name="home"),
+    path("about", lambda r: render(r, "about.html"), name="about"),
+    path("notes", views.NotesListView.as_view(), name="notes-list"),
+    path("notes/create", views.NoteCreateView.as_view(), name="notes-create"),
     path("notes/<int:note_id>", views.note_detail_view, name="notes-detail"),
     path("register", accounting_views.register_user_view, name="accounting-register"),
     path("login", accounting_views.CustomLoginView.as_view(), name="accounting-login"),

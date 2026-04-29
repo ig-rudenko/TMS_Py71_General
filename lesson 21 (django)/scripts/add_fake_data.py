@@ -43,10 +43,10 @@ def add_note(faker: Faker, user: User, tags: list[Tag]) -> Note:
 def main():
     faker = Faker("ru_RU")
 
-    users = []
-    for _ in range(10):
-        users.append(add_user(faker))
-    print("Пользователи добавлены")
+    users = User.objects.all()
+    # for _ in range(10):
+    #     users.append(add_user(faker))
+    # print("Пользователи добавлены")
 
     tags: list[Tag] = list(Tag.objects.all())
     # for _ in range(100):
@@ -55,7 +55,7 @@ def main():
 
     posts = []
     for user in users:
-        for _ in range(100):
+        for _ in range(10_000):
             selected_tags = list(faker.random_choices(tags, length=random.randint(3, 5)))
             posts.append(add_note(faker, user, selected_tags))
         print(".", end="")
