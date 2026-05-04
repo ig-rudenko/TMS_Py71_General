@@ -24,4 +24,18 @@
         <div class="pt-3">{{ note.content | safe | linebreaks }}</div>
     </div>
 
+    <hr>
+
+    <div class="mt-4">
+        {% include 'posts/create_comment_form.html' with note_id=note.id form=comment_form %}
+    </div>
+
+    <div id="comments">
+        {% include 'posts/comments_list.html' with comments=comments_page.object_list %}
+    </div>
+
+    {% if comments_page %}
+    	{% include 'paginator.html' with page=comments_page %}
+    {% endif %}
+
 {% endblock %}

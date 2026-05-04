@@ -16,26 +16,19 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.contrib.auth.views import LogoutView
 from django.shortcuts import render
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
-
-from accounting import views as accounting_views
-from notes import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", lambda r: render(r, "index.html"), name="home"),
     path("about", lambda r: render(r, "about.html"), name="about"),
-    path("notes", views.NotesListView.as_view(), name="notes-list"),
-    path("notes/create", views.NoteCreateView.as_view(), name="notes-create"),
-    path("notes/<int:note_id>", views.note_detail_view, name="notes-detail"),
-    path("register", accounting_views.register_user_view, name="accounting-register"),
-    path("login", accounting_views.CustomLoginView.as_view(), name="accounting-login"),
-    path("logout", LogoutView.as_view(), name="accounting-logout"),
-] + debug_toolbar_urls()
+    path("notes/", include("notes.urls")),
+    path("accounting/", include("accounting.urls")),
+]
 
+urlpatterns += debug_toolbar_urls()
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

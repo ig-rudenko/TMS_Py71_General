@@ -3,7 +3,7 @@
 
 {% block content %}
 
-    <form action="{% url 'accounting-login' %}" method="post">
+    <form action="{% url 'accounting:login' %}" method="post">
         {% csrf_token %}
 
         {{ form | crispy }}

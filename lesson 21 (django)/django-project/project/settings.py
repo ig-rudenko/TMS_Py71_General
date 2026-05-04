@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",  # Приложение для пользовательских сессий (аутентификация).
     "django.contrib.messages",  # Приложение для регистрации событий пользователей.
     "django.contrib.staticfiles",  # Приложение для отдачи и сбора статических файлов (CSS, JS, шрифты и пр.).
+    "django.contrib.postgres",
     "notes",
     "accounting",
     "crispy_forms",

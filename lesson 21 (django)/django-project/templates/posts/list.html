@@ -3,7 +3,7 @@
 {% block content %}
 
     <div class="w-100">
-        <form method="get" action="{% url 'notes-list' %}" class="mb-4">
+        <form method="get" action="{% url 'notes:list' %}" class="mb-4">
           <div class="mb-3">
             <label for="search-field" class="form-label">Поиск</label>
             <input type="text" class="form-control" name="search" id="search-field" value="{{ request.GET.search }}">
@@ -28,7 +28,7 @@
                     <p class="card-text">
                         {{ note.short_content | truncatewords:10 }}
                     </p>
-                    <a href="{% url 'notes-detail' note_id=note.id %}" class="card-link">Посмотреть</a>
+                    <a href="{% url 'notes:detail' note_id=note.id %}" class="card-link">Посмотреть</a>
                 </div>
             </div>
 

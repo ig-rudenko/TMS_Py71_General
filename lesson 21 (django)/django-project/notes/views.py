@@ -1,14 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models.functions import Substr
-from django.db.models.query import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, resolve_url
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
-from notes.forms import CreateNoteForm
-from notes.models import Note
+from notes.filters import filter_notes_list
+from notes.forms import CreateNoteForm, CommentForm
+from notes.models import Note, Comment
 
 
 def home_view(request):
@@ -27,14 +26,7 @@ def notes_list_view(request):
     page_number = request.GET.get("page", "1")
     per_page = 10
 
-    notes_qs = Note.objects.all()
-    if search:
-        notes_qs = notes_qs.filter(Q(title__icontains=search) | Q(content__icontains=search))
-    notes_qs = notes_qs.select_related("user")  # JOIN с users только для FK.
-    notes_qs = notes_qs.prefetch_related("tags")  # JOIN только для M2M.
-    notes_qs = notes_qs.annotate(short_content=Substr("content", 1, 200))
-    notes_qs = notes_qs.order_by("-created_at")
-    notes_qs = notes_qs.only("id", "title", "updated_at", "user__username")
+    notes_qs = filter_notes_list(search)
 
     paginator = Paginator(notes_qs, per_page)
     page = paginator.get_page(page_number)
@@ -48,16 +40,7 @@ class NotesListView(ListView):
 
     def get_queryset(self):
         search = self.request.GET.get("search", "")
-
-        notes_qs = Note.objects.all()
-        if search:
-            notes_qs = notes_qs.filter(Q(title__icontains=search) | Q(content__icontains=search))
-        notes_qs = notes_qs.select_related("user")  # JOIN с users только для FK.
-        notes_qs = notes_qs.prefetch_related("tags")  # JOIN только для M2M.
-        notes_qs = notes_qs.annotate(short_content=Substr("content", 1, 200))
-        notes_qs = notes_qs.order_by("-created_at")
-        notes_qs = notes_qs.only("id", "title", "updated_at", "user__username")
-        return notes_qs
+        return filter_notes_list(search)
 
 
 # --------------------------------------- CREATE NOTE ---------------------------------------
@@ -77,7 +60,7 @@ def note_create_view(request):
                 user=request.user,
             )
             note.tags.set(form.cleaned_data["tags"])
-            return redirect(resolve_url("notes-detail", note_id=note.id))
+            return redirect(resolve_url("notes:detail", note_id=note.id))
 
     return render(request, "posts/create.html", context={"form": form})
 
@@ -98,7 +81,7 @@ class NoteCreateView(CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return resolve_url("notes-detail", note_id=self.object.id)
+        return resolve_url("notes:detail", note_id=self.object.id)
 
 
 # --------------------------------------- DETAIL NOTE ---------------------------------------
@@ -111,7 +94,48 @@ def note_detail_view(request, note_id: int):
     except Note.DoesNotExist:
         raise Http404("Note does not exist")
 
-    # if request.user != note.user:
-    #     raise Http404("Note does not exist")
+    page_number = request.GET.get("page", "1")
+    per_page = 1
 
-    return render(request, "posts/detail.html", context={"note": note})
+    paginator = Paginator(Comment.objects.filter(note=note), per_page)
+    page = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "posts/detail.html",
+        context={
+            "note": note,
+            "comment_form": CommentForm(),
+            "comments_page": page,
+        },
+    )
+
+
+# --------------------------------------- COMMENTS ---------------------------------------
+
+
+@login_required
+def create_note_comment(request, note_id: int):
+    try:
+        note = Note.objects.get(id=note_id)
+    except Note.DoesNotExist:
+        raise Http404("Note does not exist")
+
+    form = CommentForm()
+
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            Comment.objects.create(
+                user=request.user,
+                note=note,
+                text=form.cleaned_data["text"],
+            )
+
+            return redirect(resolve_url("notes:detail", note_id=note.id) + "#comments")
+
+    return render(
+        request,
+        "posts/detail.html",
+        context={"note": note, "comment_form": form},
+    )
