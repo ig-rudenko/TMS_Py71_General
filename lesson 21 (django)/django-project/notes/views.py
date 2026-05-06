@@ -1,13 +1,16 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
+from django.db.transaction import atomic
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, resolve_url
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from notes.filters import filter_notes_list
-from notes.forms import CreateNoteForm, CommentForm
-from notes.models import Note, Comment
+from notes.forms import CreateNoteForm, CommentForm, NotesSearchForm, NoteReactionForm
+from notes.models import Note, Comment, NoteReaction
+from notes.services import set_note_reaction
 
 
 def home_view(request):
@@ -31,7 +34,11 @@ def notes_list_view(request):
     paginator = Paginator(notes_qs, per_page)
     page = paginator.get_page(page_number)
 
-    return render(request, "posts/list.html", context={"page": page})
+    return render(
+        request,
+        "posts/list.html",
+        context={"page": page, "search_form": NotesSearchForm()},
+    )
 
 
 class NotesListView(ListView):
@@ -39,8 +46,20 @@ class NotesListView(ListView):
     template_name = "posts/list.html"
 
     def get_queryset(self):
-        search = self.request.GET.get("search", "")
-        return filter_notes_list(search)
+        form = NotesSearchForm(self.request.GET)
+        if form.is_valid():
+            return filter_notes_list(
+                search=form.cleaned_data["search"],
+                user=form.cleaned_data["user"],
+                tags=form.cleaned_data["tags"],
+                time_gt=form.cleaned_data["time_gt"],
+            )
+        return filter_notes_list()
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context.update({"search_form": NotesSearchForm(self.request.GET)})
+        return context
 
 
 # --------------------------------------- CREATE NOTE ---------------------------------------
@@ -71,13 +90,15 @@ class NoteCreateView(CreateView):
     form_class = CreateNoteForm
 
     def form_valid(self, form):
-        self.object = Note.objects.create(
-            title=form.cleaned_data["title"],
-            content=form.cleaned_data["content"],
-            image=form.cleaned_data["image"],
-            user=self.request.user,
-        )
-        self.object.tags.set(form.cleaned_data["tags"])
+        with atomic():
+            self.object = Note.objects.create(
+                title=form.cleaned_data["title"],
+                content=form.cleaned_data["content"],
+                image=form.cleaned_data["image"],
+                user=self.request.user,
+            )
+            self.object.tags.set(form.cleaned_data["tags"])
+
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
@@ -87,7 +108,6 @@ class NoteCreateView(CreateView):
 # --------------------------------------- DETAIL NOTE ---------------------------------------
 
 
-@login_required
 def note_detail_view(request, note_id: int):
     try:
         note = Note.objects.get(id=note_id)
@@ -95,10 +115,20 @@ def note_detail_view(request, note_id: int):
         raise Http404("Note does not exist")
 
     page_number = request.GET.get("page", "1")
-    per_page = 1
+    per_page = 5
 
     paginator = Paginator(Comment.objects.filter(note=note), per_page)
     page = paginator.get_page(page_number)
+
+    if request.user.is_authenticated:
+        reaction = NoteReaction.objects.filter(note=note, user=request.user).first()
+    else:
+        reaction = None
+
+    reaction_stats = NoteReaction.objects.filter(note=note).aggregate(
+        likes_count=Count("reaction", filter=Q(reaction="LIKE")),
+        dislikes_count=Count("reaction", filter=Q(reaction="DISLIKE")),
+    )
 
     return render(
         request,
@@ -107,6 +137,8 @@ def note_detail_view(request, note_id: int):
             "note": note,
             "comment_form": CommentForm(),
             "comments_page": page,
+            "reaction": reaction,
+            "reactions_stats": reaction_stats,
         },
     )
 
@@ -115,7 +147,7 @@ def note_detail_view(request, note_id: int):
 
 
 @login_required
-def create_note_comment(request, note_id: int):
+def create_note_comment_view(request, note_id: int):
     try:
         note = Note.objects.get(id=note_id)
     except Note.DoesNotExist:
@@ -139,3 +171,23 @@ def create_note_comment(request, note_id: int):
         "posts/detail.html",
         context={"note": note, "comment_form": form},
     )
+
+
+# --------------------------------------- NOTE REACTION ---------------------------------------
+
+
+@login_required
+def set_note_reaction_view(request, note_id: int):
+    try:
+        note = Note.objects.get(id=note_id)
+    except Note.DoesNotExist:
+        raise Http404("Note does not exist")
+
+    if request.method != "POST":
+        return redirect(resolve_url("notes:detail", note_id=note.id))
+
+    form = NoteReactionForm(request.POST)
+    if form.is_valid():
+        set_note_reaction(note, request.user, form.cleaned_data["reaction"])
+
+    return redirect(resolve_url("notes:detail", note_id=note.id))

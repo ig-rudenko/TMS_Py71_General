@@ -8,5 +8,5 @@ EXPLAIN ANALYSE
        "accounting_user"."username"
 FROM "notes_note"
          INNER JOIN "accounting_user" ON ("notes_note"."user_id" = "accounting_user"."id")
-WHERE to_tsvector("notes_note"."title") @@ websearch_to_tsquery('models')
+WHERE "notes_note"."search_vector" @@ websearch_to_tsquery('search text')
 ORDER BY 6 DESC, "notes_note"."created_at" DESC)

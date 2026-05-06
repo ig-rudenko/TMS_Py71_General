@@ -26,7 +26,9 @@
 
     <hr>
 
-    <div class="mt-4">
+    {% include 'posts/reaction_form.html' with reaction=reaction note_id=note.id reactions_stats=reactions_stats %}
+
+    <div class="mt-4 container">
         {% include 'posts/create_comment_form.html' with note_id=note.id form=comment_form %}
     </div>
 
