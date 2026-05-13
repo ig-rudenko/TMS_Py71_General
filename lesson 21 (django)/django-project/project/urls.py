@@ -28,6 +28,7 @@ urlpatterns = [
     path("about", lambda r: render(r, "about.html"), name="about"),
     path("notes/", include("notes.urls")),
     path("accounting/", include("accounting.urls")),
+    path("api/notes/", include("notes.api.urls")),
 ]
 
 urlpatterns += debug_toolbar_urls()

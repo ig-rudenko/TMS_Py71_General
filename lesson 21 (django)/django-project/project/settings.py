@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",  # Приложение для отдачи и сбора статических файлов (CSS, JS, шрифты и пр.).
     "django.contrib.humanize",
     "django.contrib.postgres",
+    "rest_framework",
     "notes",
     "accounting",
     "crispy_forms",
