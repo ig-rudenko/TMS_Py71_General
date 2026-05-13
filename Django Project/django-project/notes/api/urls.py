@@ -5,6 +5,6 @@ from . import views
 app_name = "notes:api"
 
 urlpatterns = [
-    path("", views.notes_api_view, name="list"),
-    path("<int:note_id>", views.note_detail_api_view, name="detail"),
+    path("", views.NoteListCreateAPIView.as_view(), name="list"),
+    path("<int:note_id>", views.NoteDetailAPIView.as_view(), name="detail"),
 ]

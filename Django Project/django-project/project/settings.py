@@ -28,6 +28,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 ALLOWED_HOSTS = []
+APPEND_SLASH = False
 
 # Application definition
 
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.postgres",
     "rest_framework",
+    "django_filters",
     "notes",
     "accounting",
     "crispy_forms",
@@ -142,4 +144,14 @@ LOGOUT_REDIRECT_URL = "/"
 UNFOLD = {
     "SITE_TITLE": "Notes Admin",
     "SITE_HEADER": "Notes Admin",
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
 }
