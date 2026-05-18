@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounting.models import User
-from notes.models import Note
+from notes.models import Note, Comment
 
 
 class UserShortSerializer(serializers.ModelSerializer):
@@ -29,3 +29,12 @@ class NoteListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = ["id", "title", "content_preview", "user", "image", "created_at", "updated_at", "tags"]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserShortSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "text", "user", "note", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "created_at", "updated_at"]

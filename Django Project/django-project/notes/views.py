@@ -130,6 +130,18 @@ def note_detail_view(request, note_id: int):
         dislikes_count=Count("reaction", filter=Q(reaction="DISLIKE")),
     )
 
+    # ============= Просмотренные =================
+    session_key = "read_notes"
+    if not request.session.get(session_key):
+        request.session[session_key] = []
+
+    if note.id in request.session[session_key]:
+        request.session[session_key].remove(note.id)
+
+    request.session[session_key].append(note.id)
+    request.session.modified = True
+    # =============================================
+
     return render(
         request,
         "posts/detail.html",

@@ -2,7 +2,7 @@ from django.contrib.postgres.search import TrigramSimilarity, SearchRank, Search
 from django.db.models import F, Q
 from django_filters import rest_framework as drf_filters
 
-from notes.models import Note
+from notes.models import Note, Comment
 
 
 class NoteFilter(drf_filters.FilterSet):
@@ -39,3 +39,13 @@ class NoteFilter(drf_filters.FilterSet):
             return queryset
 
         return queryset.filter(tags__name=value)
+
+
+class CommentFilter(drf_filters.FilterSet):
+    text = drf_filters.CharFilter(lookup_expr="icontains")
+    username = drf_filters.CharFilter(field_name="user__username", label="Username")
+    time = drf_filters.DateFromToRangeFilter(field_name="created_at", label="By created at field")
+
+    class Meta:
+        model = Comment
+        fields = ["text", "username", "time", "note_id"]

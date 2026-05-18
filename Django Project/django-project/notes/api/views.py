@@ -1,15 +1,16 @@
 from django.db.models.functions import Substr
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from notes.models import Note
-from .filters import NoteFilter
-from .permissions import IsNoteOwnerOrReadOnly
-from .serializers import NoteSerializer, NoteListSerializer
+from notes.models import Note, Comment
+from .filters import NoteFilter, CommentFilter
+from .permissions import IsNoteAndCommentOwnerOrReadOnly
+from .serializers import NoteSerializer, NoteListSerializer, CommentSerializer
 
 
 @api_view(["GET", "POST"])
@@ -82,7 +83,7 @@ class NoteListCreateAPIView(ListCreateAPIView):
 
 
 class NoteDetailAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsNoteOwnerOrReadOnly]
+    permission_classes = [IsNoteAndCommentOwnerOrReadOnly]
     lookup_field = "id"
     lookup_url_kwarg = "note_id"
     queryset = (
@@ -100,3 +101,66 @@ class NoteDetailAPIView(RetrieveUpdateDestroyAPIView):
         )
     )
     serializer_class = NoteSerializer
+
+
+class NoteViewSet(ModelViewSet):
+    serializer_class = NoteSerializer
+    lookup_field = "id"
+    lookup_url_kwarg = "note_id"
+    permission_classes = [IsAuthenticatedOrReadOnly, IsNoteAndCommentOwnerOrReadOnly]
+    filterset_class = NoteFilter
+
+    def get_queryset(self):
+        if self.action == "list":
+            return (
+                Note.objects.all()
+                .select_related("user")
+                .prefetch_related("tags")
+                .only(
+                    "title",
+                    "user",
+                    "image",
+                    "created_at",
+                    "updated_at",
+                    "user__username",
+                    "user__email",
+                )
+                .annotate(content_preview=Substr("content", 1, 200))
+            )
+        return Note.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return NoteListSerializer
+        return NoteSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_permissions(self):
+        if self.action == "favorite":
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    @action(detail=True, methods=["POST", "DELETE"])
+    def favorite(self, request, pk=None):
+        note = self.get_object()
+
+        # Добавление в избранное.
+        print("Добавление в избранное: ", note)
+        # =======================
+
+        if self.request.method == "DELETE":
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class CommentViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsNoteAndCommentOwnerOrReadOnly]
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all().select_related("user")
+    filterset_class = CommentFilter
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
