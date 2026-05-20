@@ -1,0 +1,11 @@
+[project]
+name = "django-rest-project"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0.5",
+    "django-filter>=25.2",
+    "djangorestframework>=3.17.1",
+    "djangorestframework-simplejwt[crypto]>=5.5.1",
+    "drf-nested-routers>=0.95.0",
+]
