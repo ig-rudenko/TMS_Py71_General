@@ -31,10 +31,19 @@ class NoteListSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "content_preview", "user", "image", "created_at", "updated_at", "tags"]
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentNoteWriteSerializer(serializers.ModelSerializer):
     user = UserShortSerializer(read_only=True)
 
     class Meta:
         model = Comment
         fields = ["id", "text", "user", "note", "created_at", "updated_at"]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserShortSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "text", "user", "note", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "note", "created_at", "updated_at"]

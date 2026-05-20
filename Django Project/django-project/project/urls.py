@@ -21,9 +21,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
+from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from notes.api.urls import router as notes_router
+from notes.api.urls import notes_router, comments_nested_router
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -37,6 +38,7 @@ urlpatterns = [
     path("api/token/refresh", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify", TokenVerifyView.as_view(), name="token_verify"),
     path("api/", include(notes_router.urls)),
+    path("api/", include(comments_nested_router.urls)),
 ]
 
 urlpatterns += debug_toolbar_urls()

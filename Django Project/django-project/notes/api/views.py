@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models.functions import Substr
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -10,7 +11,8 @@ from rest_framework.viewsets import ModelViewSet
 from notes.models import Note, Comment
 from .filters import NoteFilter, CommentFilter
 from .permissions import IsNoteAndCommentOwnerOrReadOnly
-from .serializers import NoteSerializer, NoteListSerializer, CommentSerializer
+from .serializers import NoteSerializer, NoteListSerializer, CommentNoteWriteSerializer, CommentSerializer
+from ..services import NotesCache
 
 
 @api_view(["GET", "POST"])
@@ -106,9 +108,10 @@ class NoteDetailAPIView(RetrieveUpdateDestroyAPIView):
 class NoteViewSet(ModelViewSet):
     serializer_class = NoteSerializer
     lookup_field = "id"
-    lookup_url_kwarg = "note_id"
+    lookup_url_kwarg = "id"
     permission_classes = [IsAuthenticatedOrReadOnly, IsNoteAndCommentOwnerOrReadOnly]
     filterset_class = NoteFilter
+    cache_list_timeout = 60
 
     def get_queryset(self):
         if self.action == "list":
@@ -142,6 +145,20 @@ class NoteViewSet(ModelViewSet):
             return [IsAuthenticated()]
         return super().get_permissions()
 
+    def list(self, request, *args, **kwargs):
+        notes_cache = NotesCache(request)
+
+        if notes_cache.can_use_cache:
+            cached_data = notes_cache.get()
+            if cached_data is not None:
+                return Response(cached_data)
+
+        new_response = super().list(request, *args, **kwargs)
+
+        notes_cache.set(new_response.data)
+
+        return new_response
+
     @action(detail=True, methods=["POST", "DELETE"])
     def favorite(self, request, pk=None):
         note = self.get_object()
@@ -158,9 +175,28 @@ class NoteViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, IsNoteAndCommentOwnerOrReadOnly]
-    serializer_class = CommentSerializer
-    queryset = Comment.objects.all().select_related("user")
     filterset_class = CommentFilter
+    # default: lookup_url_kwarg = "pk"
+    # default: lookup_field = "pk"
+
+    def get_queryset(self):
+        qs = Comment.objects.all().select_related("user")
+
+        note_id = self.kwargs.get("note_id")
+        if note_id is not None:
+            return qs.filter(note_id=note_id)
+
+        return qs
+
+    def get_serializer_class(self):
+        if self.kwargs.get("note_id") is not None:
+            return CommentSerializer
+        return CommentNoteWriteSerializer
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        if self.kwargs.get("note_id") is not None:
+            note = get_object_or_404(Note, pk=self.kwargs["note_id"])
+            serializer.save(user=self.request.user, note=note)
+
+        else:
+            serializer.save(user=self.request.user)
