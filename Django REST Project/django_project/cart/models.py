@@ -8,10 +8,10 @@ User = get_user_model()
 
 
 class Cart(AuditModel):
-    user = models.OneToOneField(User, related_name='cart', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name="cart", on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'cart'
+        db_table = "carts"
 
     def __str__(self):
         return f"Корзина пользователя {self.user.username}"
@@ -27,8 +27,8 @@ class CartItem(AuditModel):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
-        db_table = 'cart_items'
-        ordering = ['-created_at']
+        db_table = "cart_items"
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"

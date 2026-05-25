@@ -1,6 +1,9 @@
-from django.contrib.auth.models import User as DefaultUser
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
-class User(DefaultUser):
-    pass
+class User(AbstractUser):
+    email = models.EmailField()
 
+    class Meta:
+        db_table = "users"

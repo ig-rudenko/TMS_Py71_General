@@ -19,9 +19,11 @@ from django.contrib import admin
 from django.urls import path, include
 
 from catalog.urls import router as catalog_router
+from catalog.views import ImageUploadView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/accounting/", include("accounting.urls")),
-    path("api/", catalog_router.urls),
+    path("api/", include(catalog_router.urls)),
+    path("api/image-upload", ImageUploadView.as_view()),
 ]
