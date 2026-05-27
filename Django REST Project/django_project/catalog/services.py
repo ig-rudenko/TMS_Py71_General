@@ -5,15 +5,16 @@ from .models import Category, Product, Tag
 
 
 def create_product(validated_data) -> Product:
-    category_data = validated_data.pop("category")
+    data = validated_data.copy()
+    category_data = data.pop("category")
 
-    tags_data: list[str] = validated_data.pop("tags")
+    tags_data: list[str] = data.pop("tags")
 
     with atomic():
         category, is_created = Category.objects.get_or_create(
             name=category_data["name"], defaults={"description": category_data.get("description", "")}
         )
-        product = Product.objects.create(**validated_data, category=category)
+        product = Product.objects.create(**data, category=category)
 
         # TAGS
         new_tags_objs = []
@@ -27,8 +28,6 @@ def create_product(validated_data) -> Product:
 
 
 def update_product(instance: Product, validated_data) -> Product:
-    print("update_product", validated_data)
-
     tags_data: list[str] | None = validated_data.get("tags")
     if tags_data is not None:
         del validated_data["tags"]

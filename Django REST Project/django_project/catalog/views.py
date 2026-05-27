@@ -23,9 +23,13 @@ class CategoryViewSet(ModelViewSet):
 
 
 class ProductsViewSet(ModelViewSet):
-    queryset = Product.objects.all()
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = ProductFilter
+
+    def get_queryset(self):
+        if self.action == "create":
+            return Product.objects.all()
+        return Product.objects.all().select_related("category")
 
     def get_serializer_class(self):
         if self.action == "list":
