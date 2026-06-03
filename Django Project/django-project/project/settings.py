@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,6 +54,7 @@ INSTALLED_APPS = [
     "accounting",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_celery_beat",
     "debug_toolbar",
 ]
 
@@ -98,6 +101,14 @@ DATABASES = {
         "PASSWORD": "password123",
         "HOST": "localhost",
         "PORT": "5432",
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "KEY_PREFIX": "",
     }
 }
 
@@ -200,3 +211,32 @@ SIMPLE_JWT = {
     "REVOKE_TOKEN_CLAIM": "hash_password",
     "CHECK_USER_IS_ACTIVE": True,
 }
+
+# ================================== CELERY ====================================
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_TASK_TIME_LIMIT = 60 * 60
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 1024 * 1024 * 300
+
+# CELERY_BEAT_SCHEDULE = {
+#     "update-notes-cache": {
+#         "task": "notes.tasks.create_notes_cache",
+#         "schedule": 100,  # seconds
+#     }
+# }
+
+
+# ================================== EMAIL ====================================
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = "ig.rudenko1@yandex.ru"
+EMAIL_HOST_PASSWORD = "oqphocgsazxtjsmf"

@@ -1,4 +1,3 @@
-from django.core.cache import cache
 from django.db.models.functions import Substr
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -146,7 +145,7 @@ class NoteViewSet(ModelViewSet):
         return super().get_permissions()
 
     def list(self, request, *args, **kwargs):
-        notes_cache = NotesCache(request)
+        notes_cache = NotesCache(request.GET)
 
         if notes_cache.can_use_cache:
             cached_data = notes_cache.get()

@@ -14,16 +14,16 @@ class CustomLoginView(LoginView):
 def register_user_view(request):
     form = RegisterForm()
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
             User.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name'],
-                password=form.cleaned_data['password1'],
+                username=form.cleaned_data["username"],
+                email=form.cleaned_data["email"],
+                first_name=form.cleaned_data["first_name"],
+                last_name=form.cleaned_data["last_name"],
+                password=form.cleaned_data["password1"],
             )
-            return redirect(resolve_url("account-login"))
+            return redirect(resolve_url("accounting:login"))
 
     return render(request, "accounting/register.html", {"form": form})
