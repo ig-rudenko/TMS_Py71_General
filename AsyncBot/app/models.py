@@ -13,10 +13,7 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True)
-    password: Mapped[str] = mapped_column(String(150))
-    email: Mapped[str] = mapped_column(String(256), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     def __str__(self):
         return self.username
