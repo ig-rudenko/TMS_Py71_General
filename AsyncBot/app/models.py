@@ -21,8 +21,9 @@ class UserModel(Base):
     def __repr__(self):
         return f"User: {self.username}"
 
-class PostModel(Base):
-    __tablename__ = "posts"
+
+class NoteModel(Base):
+    __tablename__ = "notes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(64))

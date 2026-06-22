@@ -1,11 +1,12 @@
+import asyncio
+
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from ..callbacks.general import clear_state
+from ..callbacks.general import clear_state_callback, go_to_home_callback
 from ..services.users import get_user_by_id, create_user
-from ..states.notes import CreateNoteStateGroup
 from ..text.welcome import WELCOME_TEXT
 from ..keyboards.general import get_general_keyboard_markup
 
@@ -15,6 +16,8 @@ router = Router()
 @router.message(Command("start"))
 async def start_handler(message: types.Message):
     from_user = message.from_user
+    if from_user is None:
+        return
 
     user_model = await get_user_by_id(from_user.id)
     if user_model is None:
@@ -23,8 +26,17 @@ async def start_handler(message: types.Message):
     await message.answer(WELCOME_TEXT, reply_markup=get_general_keyboard_markup())
 
 
-@router.callback_query(F.data == clear_state)
+@router.callback_query(F.data == go_to_home_callback)
+async def go_to_home_handler(callback: CallbackQuery):
+    await callback.message.edit_text(WELCOME_TEXT, reply_markup=get_general_keyboard_markup())
+    await callback.answer()
+
+
+@router.callback_query(F.data == clear_state_callback)
 async def clear_state_handler(callback_data: CallbackQuery, state: FSMContext):
     await state.clear()
-    await callback_data.message.answer("Отмена действия")
+    await callback_data.message.edit_text("Отмена действия")
     await callback_data.answer()
+
+    await asyncio.sleep(5)
+    await callback_data.message.delete()

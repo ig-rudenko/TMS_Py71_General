@@ -1,3 +1,5 @@
-show_notes = "show_notes"
-create_note = "create_note"
-clear_state = "clear_state"
+show_notes_callback = "show_notes"
+create_note_callback = "create_note"
+clear_state_callback = "clear_state"
+submit_callback = "submit"
+go_to_home_callback = "go_to_home"
