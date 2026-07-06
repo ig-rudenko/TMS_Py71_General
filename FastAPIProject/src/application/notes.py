@@ -1,7 +1,7 @@
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import NoteModel
+from src.infrastructure.db.models import NoteModel
 
 
 async def create_note(session: AsyncSession, *, tg_id: int, title: str, content: str) -> NoteModel:

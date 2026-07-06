@@ -48,7 +48,7 @@ class APITokenModel(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    last_used: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    last_used: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     def __repr__(self):
         return f"APIToken: {self.id}"

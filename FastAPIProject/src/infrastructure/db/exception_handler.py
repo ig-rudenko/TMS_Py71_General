@@ -2,7 +2,7 @@ import re
 
 from sqlalchemy.exc import IntegrityError
 
-from src.exceptions import UniqueConstraintError, DomainException
+from src.domain.exceptions import UniqueConstraintError, DomainException
 
 
 def exception_handler(exc: Exception):

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.settings import settings
+from src.infrastructure.settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,9 +23,9 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from src.models import Base  # noqa: E402
+from src.infrastructure.db.models import Base  # noqa: E402
 
-from src.models import UserModel, NoteModel  # noqa: E402
+from src.infrastructure.db.models import UserModel, NoteModel  # noqa: E402
 
 print("load model:", UserModel)
 print("load model:", NoteModel)

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from src.handlers.auth import router as auth_router
-from src.handlers.ws import router as ws_router
+from src.presentation.api.handlers.auth import router as auth_router
+from src.presentation.api.handlers.ws import router as ws_router
 
 app = FastAPI()
 

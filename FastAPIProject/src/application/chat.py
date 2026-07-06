@@ -1,10 +1,10 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from src.dto.auth import UserDTO
-from src.models import ChatMessageModel
+from src.domain.users import User
+from src.infrastructure.db.models import ChatMessageModel
 from src.schemas.chat import ChatMessageSchema
-from src.db.connector import async_session_maker
+from src.infrastructure.db.connector import async_session_maker
 
 
 class WSConnectionManager:
@@ -39,7 +39,7 @@ class WSConnectionManager:
 ws_manager = WSConnectionManager()
 
 
-async def handle_websocket(user: UserDTO, ws: WebSocket):
+async def handle_websocket(user: User, ws: WebSocket):
     ws_manager.add_connection(user.id, ws)
 
     try:
