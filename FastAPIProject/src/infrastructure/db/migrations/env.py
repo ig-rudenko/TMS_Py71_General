@@ -1,11 +1,10 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-from alembic import context
 
 from src.infrastructure.settings import settings
 
@@ -23,9 +22,11 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from src.infrastructure.db.models import Base  # noqa: E402
-
-from src.infrastructure.db.models import UserModel, NoteModel  # noqa: E402
+from src.infrastructure.db.models import (  # noqa: E402
+    Base,  # noqa: E402
+    NoteModel,
+    UserModel,
+)
 
 print("load model:", UserModel)
 print("load model:", NoteModel)

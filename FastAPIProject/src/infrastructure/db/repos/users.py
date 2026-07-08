@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.users.repo import AbstractUserRepository
+from src.domain.exceptions import ObjectNotFound
 from src.domain.users import User
 from src.infrastructure.db.exception_handler import exception_handler
 from src.infrastructure.db.models import UserModel
@@ -13,12 +14,14 @@ class SQLUserRepository(AbstractUserRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, id_: int) -> User | None:
+    async def get_by_id(self, id_: int) -> User:
         query = select(UserModel).where(UserModel.id == id_)
         result = await self.session.execute(query)  # (UserModel, )
 
         user_model: UserModel | None = result.scalar()
-        return self._to_domain(user_model) if user_model is not None else None
+        if user_model is None:
+            raise ObjectNotFound(f"Не найден пользователь id: `{id_}`")
+        return self._to_domain(user_model)
 
     async def get_by_username(self, username: str) -> User | None:
         query = select(UserModel).where(UserModel.username == username)
@@ -35,7 +38,7 @@ class SQLUserRepository(AbstractUserRepository):
 
         result = await self.session.execute(query)
 
-        return list(result.scalars()), 0
+        return [self._to_domain(u) for u in result.scalars()], 0
 
     async def add(self, user: User) -> User:
         user_model = UserModel(username=user.username, password=user.password)

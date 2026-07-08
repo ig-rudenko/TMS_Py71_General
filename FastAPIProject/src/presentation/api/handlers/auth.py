@@ -1,19 +1,20 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
-from src.application.users.handlers import UserApplicationHandler
 from src.application.api_tokens.handlers import ApiTokenApplicationHandler
+from src.application.users.handlers import UserApplicationHandler
 from src.domain.exceptions import DomainException, UniqueConstraintError
-from ..dependencies import get_users_app_handler, get_api_tokens_app_handler
+
+from ..auth import get_current_user
+from ..dependencies import get_api_tokens_app_handler, get_users_app_handler
 from ..schemas.auth import (
-    UserSchema,
-    RegisterUserSchema,
-    LoginUserSchema,
     ApiTokenSchema,
+    LoginUserSchema,
+    RegisterUserSchema,
+    UserSchema,
 )
-from src.application.auth import current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -43,5 +44,5 @@ async def login_api_view(
 
 
 @router.get("/myself", response_model=UserSchema)
-async def get_myself_api_view(user: Annotated[UserSchema, Depends(current_user)]):
+async def get_myself_api_view(user: Annotated[UserSchema, Depends(get_current_user)]):
     return user

@@ -6,7 +6,8 @@ from src.domain.users import User
 class AbstractUserRepository(ABC):
 
     @abstractmethod
-    async def get_by_id(self, id_: int) -> User | None: ...
+    async def get_by_id(self, id_: int) -> User:
+        """Если не найден, то вернет ошибку ObjectNotFound"""
 
     @abstractmethod
     async def get_by_username(self, username: str) -> User | None: ...

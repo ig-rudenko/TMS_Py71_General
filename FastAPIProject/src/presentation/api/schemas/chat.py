@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ChatMessageSchema(BaseModel):
-    id: int | None = None
+    id: int
     sender_id: int
     recipient_id: int
     text: str = Field(..., min_length=1, max_length=4096)

@@ -1,6 +1,7 @@
-from .repo import AbstractUserRepository
 from src.domain.users import User
+
 from ..auth import get_password_hash
+from .repo import AbstractUserRepository
 
 
 class UserApplicationHandler:

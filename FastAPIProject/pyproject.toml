@@ -9,5 +9,33 @@ dependencies = [
     "fastapi[standard]>=0.138.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.2",
+    "redis>=8.0.1",
     "sqlalchemy>=2.0.51",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "mypy>=2.2.0",
+]
+
+[tool.ruff]
+line-length = 120
+lint.extend-select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+lint.ignore = [
+    "E501",
+    "E402"
 ]
