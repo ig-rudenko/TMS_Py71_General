@@ -12,3 +12,17 @@ dependencies = [
     "drf-spectacular>=0.29.0",
     "pillow>=12.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "celery-types>=0.26.0",
+    "django-stubs>=6.0.6",
+    "djangorestframework-stubs>=3.17.0",
+    "mypy>=2.2.0",
+]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "django_project.django_project.settings"
