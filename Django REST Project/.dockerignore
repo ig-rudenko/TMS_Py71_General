@@ -1,0 +1,14 @@
+*
+
+!django_project/accounting
+!django_project/cart
+!django_project/catalog
+!django_project/django_project
+!django_project/orders
+!django_project/manage.py
+!django_project/run.sh
+!requirements.txt
+
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
