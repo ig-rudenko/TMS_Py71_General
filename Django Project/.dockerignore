@@ -1,0 +1,14 @@
+*
+
+!django-project/accounting
+!django-project/notes
+!django-project/project
+!django-project/templates
+!django-project/manage.py
+!django-project/run.sh
+!pyproject.toml
+!uv.lock
+
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class

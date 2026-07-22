@@ -1,0 +1,24 @@
+services:
+
+  backend:
+    build: .
+    image: django:0.3
+    command: /bin/sh /app/run.sh
+    environment:
+      DB_NAME: ${POSTGRES_DB:?set POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      DB_HOST: database
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./django_project/db.sqlite3:/app/db.sqlite3
+
+  database:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - "./compose/postgres:/var/lib/postgresql/18/docker"

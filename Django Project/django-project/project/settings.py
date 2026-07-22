@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
 from celery.schedules import crontab
+
+from .settings_utils import env_bool, env_int
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--^sqz9x#3&(q7+!drv5jos*9lp=syc50q6tcm5&0*z@-+d(vvb"
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY", "django-insecure--^sqz9x#3&(q7+!drv5jos*9lp=syc50q6tcm5&0*z@-+d(vvb"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,7 +35,7 @@ DEBUG = True
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 APPEND_SLASH = False
 
 # Application definition
@@ -96,21 +101,22 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django-test-notes",
-        "USER": "django",
-        "PASSWORD": "password123",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("DB_NAME", "django-test"),
+        "USER": os.getenv("DB_USER", "django"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "password"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", 5432),
     }
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",
-        "KEY_PREFIX": "",
+if os.getenv("DJANGO_REDIS_CACHE"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv("DJANGO_REDIS_CACHE"),
+            "KEY_PREFIX": "",
+        }
     }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -135,7 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ru-RU"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = os.getenv("TIME_ZONE", "UTC")
 
 USE_I18N = True
 
@@ -145,6 +151,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -214,8 +221,8 @@ SIMPLE_JWT = {
 
 # ================================== CELERY ====================================
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
 
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -234,9 +241,9 @@ CELERY_WORKER_MAX_MEMORY_PER_CHILD = 1024 * 1024 * 300
 # ================================== EMAIL ====================================
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.yandex.ru"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = "ig.rudenko1@yandex.ru"
-EMAIL_HOST_PASSWORD = "oqphocgsazxtjsmf"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.yandex.ru")
+EMAIL_PORT = env_int("EMAIL_PORT", 465)
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", True)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "ig.rudenko1@yandex.ru")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "oqphocgsazxtjsmf")

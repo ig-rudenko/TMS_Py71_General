@@ -1,13 +1,16 @@
-FROM python:3.14.6-alpine as build
+FROM python:3.14.6-slim AS build
 
 ARG uv_version=0.11.31
 ARG python_version=3.14
 
 WORKDIR /app
 
-RUN apk add --update --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    curl
+    curl \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD https://astral.sh/uv/$uv_version/install.sh /uv-installer.sh
 RUN sh /uv-installer.sh
@@ -28,26 +31,26 @@ RUN --mount=type=cache,destination=/root/.cache/uv uv sync \
     --frozen
 
 
-FROM python:3.14.6-alpine
+FROM python:3.14.6-slim
 
 ARG user_id=1000
 ARG group_id=1001
 
 WORKDIR /app
 
-RUN apk add --update --no-cache \
-    ca-certificates \
-    curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup -g $group_id appgroup && \
-    adduser -D -h /app -u $user_id app $group_id && \
-    chown -R $user_id:$group_id /app
+RUN addgroup --gid $group_id app && \
+    adduser --disabled-password --home /app --uid $user_id --gid $group_id app && \
+    chown -R $user_id:$group_id /app;
 
 ENV PATH=/app/venv/bin:$PATH \
     PYTHONOPTIMIZE=1 \
     PYTHONUNBUFFERED=1
 
-COPY --chown=$user_id:$group_id django_project /app
+COPY --chown=$user_id:$group_id django-project /app
 COPY --link --chown=$user_id:$group_id --from=build /app/venv /app/venv
 
 EXPOSE 8000/tcp

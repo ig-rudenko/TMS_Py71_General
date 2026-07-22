@@ -1,0 +1,33 @@
+FROM python:3.14.6-alpine
+
+ARG uv_version=0.11.31
+ARG user_id=1000
+ARG group_id=1001
+
+RUN apk add --update --no-cache \
+    ca-certificates \
+    curl
+
+RUN addgroup -g $group_id appgroup && \
+    adduser -D -h /app -u $user_id app $group_id
+
+ADD https://astral.sh/uv/$uv_version/install.sh /uv-installer.sh
+
+RUN chown $user_id:$group_id /uv-installer.sh
+
+USER $user_id:$group_id
+
+RUN sh /uv-installer.sh
+
+ENV PATH="/app/.local/bin/:/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock /app/
+
+RUN uv sync \
+    --no-dev \
+    --no-install-project \
+    --frozen
+
+COPY django_project /app
